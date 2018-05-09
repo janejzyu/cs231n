@@ -346,7 +346,15 @@ def layernorm_forward(x, gamma, beta, ln_param):
     # transformations you could perform, that would enable you to copy over   #
     # the batch norm code and leave it almost unchanged?                      #
     ###########################################################################
-    pass
+    mu = np.mean(x, axis = 1, keepdims = True) # shape (N, 1)
+    xmu = x - mu # shape (N, D)
+    var = np.mean(xmu ** 2, axis = 1, keepdims = True) # shape (N, 1)
+    sqrtvar = np.sqrt(var + eps) # shape (D, )
+    ivar = 1 / sqrtvar # shape (D, )
+    xhat =  xmu * ivar # shape (N, D)
+    out = gamma * xhat + beta # shape (N, D)
+    cache = (xmu, ivar, xhat, gamma, sqrtvar)
+     
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -377,7 +385,28 @@ def layernorm_backward(dout, cache):
     # implementation of batch normalization. The hints to the forward pass    #
     # still apply!                                                            #
     ###########################################################################
-    pass
+    xmu, ivar, xhat, gamma, sqrtvar = cache
+    N, D = dout.shape
+
+    dbeta = np.sum(dout, axis = 0) # shape (D, )
+    dgammax = 1 * dout # shape (N, D)
+    
+    dgamma = np.sum(dgammax * xhat, axis = 0) # shape (D, )
+    dxhat = dgammax * gamma # shape (N, D)
+    
+    divar = np.sum(dxhat * xmu, axis = 1, keepdims = True) # shape (D, )
+    dsqrtvar = divar * (-1.0 / sqrtvar ** 2) # shape (D, )
+    dvar = (0.5 / sqrtvar) * dsqrtvar # shape (D, )
+    dsq = 1 / float(D) * np.ones((N, D))  * dvar # shape (N, D)
+    dxmu2 = 2 * xmu * dsq # shape (N, D)
+    dxmu1 = dxhat * ivar # shape (N, D)
+    dxmu = dxmu1 + dxmu2 # shape (N, D)
+    
+    dmu = - np.sum(dxmu, axis = 1, keepdims = True) # shape (D, )
+    dx1 = dxmu # shape (N, D)
+    dx2 = 1 / float(D) * np.ones((N, D)) * dmu # shape (N, D)    
+    dx = dx1 + dx2 # shape (N, D)
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
