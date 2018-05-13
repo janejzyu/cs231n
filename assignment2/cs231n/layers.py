@@ -519,7 +519,7 @@ def conv_forward_naive(x, w, b, conv_param):
     input x directly.
 
     Returns a tuple of:
-    - out: Output data, of shape (N, F, H', W') where H' and W' are given by
+    - out: Output data, of shape (N, F, H', W') where H' and W' are given yb
       H' = 1 + (H + 2 * pad - HH) / stride
       W' = 1 + (W + 2 * pad - WW) / stride
     - cache: (x, w, b, conv_param)
@@ -529,7 +529,22 @@ def conv_forward_naive(x, w, b, conv_param):
     # TODO: Implement the convolutional forward pass.                         #
     # Hint: you can use the function np.pad for padding.                      #
     ###########################################################################
-    pass
+    stride = conv_param.get('stride', 1)
+    pad = conv_param.get('pad', 0)
+    N, _, H, W = x.shape
+    F, _, HH, WW = w.shape
+    w_strech = w.reshape(F, -1)
+    x_pad = np.pad(x, ((0, 0), (0, 0), (pad, pad), (pad, pad)), 
+                   mode = 'constant', constant_values = 0)
+    H_p, W_p = 1 + (H + 2 * pad - HH) / stride, 1 + (W + 2 * pad - WW) / stride
+    out = np.full([W_p, H_p, F, N], np.nan)
+    for j in range(W_p):
+        for i in range(H_p):
+            q, p = j * stride, i * stride
+            x_slice = x_pad[:, :, p:(p + HH), q:(q + WW)] # shape (N, C, HH, WW)
+            x_slice = x_slice.reshape(N, -1)
+            out[j, i] = np.dot(w_strech, x_slice.T) + b.reshape(F, 1) # shape(F, N)
+    out = out.T       
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -554,7 +569,10 @@ def conv_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
-    pass
+    x, w, b, conv_param = cache
+    db = np.sum(dout, axis = (0, 2, 3))
+    dx = x
+    dw = w
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -584,7 +602,19 @@ def max_pool_forward_naive(x, pool_param):
     ###########################################################################
     # TODO: Implement the max-pooling forward pass                            #
     ###########################################################################
-    pass
+    stride = pool_param.get('stride', 1)
+    pool_height = pool_param.get('pool_height', 1)
+    pool_width = pool_param.get('pool_width', 1)
+    N, C, H, W = x.shape
+    H_p, W_p = 1 + (H - pool_height) / stride, 1 + (W - pool_width) / stride
+    out = np.full([W_p, H_p, C, N], np.nan)
+    for j in range(W_p):
+        for i in range(H_p):
+            q, p = j * stride, i * stride 
+            x_slice = x[:, :, p:(p + pool_height), q:(q + pool_width)]
+            x_pool = np.max(x_slice, axis = (2, 3))
+            out[j, i] = x_pool.T
+    out = out.T
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
