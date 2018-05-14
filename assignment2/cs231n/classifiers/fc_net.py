@@ -47,14 +47,12 @@ class TwoLayerNet(object):
         # and biases using the keys 'W1' and 'b1' and second layer                 #
         # weights and biases using the keys 'W2' and 'b2'.                         #
         ############################################################################
-        W1 = np.random.normal(0, weight_scale, (input_dim, hidden_dim))
-        W2 = np.random.normal(0, weight_scale, (hidden_dim, num_classes))
-        b1 = np.zeros(hidden_dim)
-        b2 = np.zeros(num_classes)
-        self.params['W1'] = W1
-        self.params['b1'] = b1
-        self.params['W2'] = W2
-        self.params['b2'] = b2
+        self.params['W1'] = np.random.normal(0, weight_scale, 
+                                             (input_dim, hidden_dim))
+        self.params['W2'] = np.random.normal(0, weight_scale, 
+                                             (hidden_dim, num_classes))
+        self.params['b1'] = np.zeros(hidden_dim)
+        self.params['b2'] = np.zeros(num_classes)
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -189,7 +187,8 @@ class FullyConnectedNet(object):
         all_dims = [input_dim] + hidden_dims + [num_classes]
         for i in range(1, len(all_dims)):
             in_dim, out_dim = all_dims[i - 1], all_dims[i]
-            self.params['W' + str(i)] = np.random.normal(0, weight_scale, (in_dim, out_dim))          
+            self.params['W' + str(i)] = np.random.normal(0, weight_scale, 
+                                                         (in_dim, out_dim))          
             self.params['b' + str(i)] = np.zeros(out_dim)
             if self.normalization=='batchnorm' and i != self.num_layers:
                 self.params['gamma' + str(i)] = np.ones(out_dim)          
