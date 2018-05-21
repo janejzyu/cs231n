@@ -581,9 +581,9 @@ def conv_backward_naive(dout, cache):
                    mode = 'constant', constant_values = 0)
     dx_pad = np.pad(dx, ((0, 0), (0, 0), (pad, pad), (pad, pad)), 
                     mode = 'constant', constant_values = 0)
-    for j in range(W_p):
-        for i in range(H_p):
-            q, p = j * stride, i * stride
+    for i in range(H_p):
+        for j in range(W_p):
+            p, q = i * stride, j * stride
             x_cur = x_pad[:, :, p:(p + HH), q:(q + WW)] # shape (N, C, HH, WW) 
             out_cur = dout[:, :, i, j] # shape (N, F)
             dw += np.dot(out_cur.T, x_cur.reshape(N, -1)).reshape(F, C, HH, WW)
@@ -662,9 +662,9 @@ def max_pool_backward_naive(dout, cache):
     N, C, H, W = x.shape
     dx = np.zeros_like(x)
     H_p, W_p = 1 + (H - ph) // stride, 1 + (W - pw) // stride
-    for j in range(W_p):
-        for i in range(H_p):
-            q, p = j * stride, i * stride 
+    for i in range(H_p):
+        for j in range(W_p):
+            p, q = i * stride, j * stride
             x_slice = x[:, :, p:(p + ph), q:(q + pw)] # shape (N, C, ph, pw)
             x_pool = np.max(x_slice, axis = (2, 3), keepdims = True)
             x_mask = (x_slice >= x_pool)
