@@ -1,6 +1,6 @@
 *.swp
 *.pyc
-../google-cloud-sdk/
+google-cloud-sdk/*
 .env/*
 
 # gitignore the built release.
